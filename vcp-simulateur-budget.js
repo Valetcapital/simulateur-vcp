@@ -1,5 +1,5 @@
 /* =========================================================
-   VALET CAPITAL PARTNERS — Simulateur Budgétaire (Module Zéro formation)
+   VALET CAPITAL PARTNERS — Simulateur Budgétaire (avec détail optionnel des dépenses)
    ========================================================= */
 (function(){
   function addPreconnect(href, crossorigin){
@@ -145,6 +145,41 @@
     margin-bottom:10px;
   }
   .field label .val{font-family:'IBM Plex Mono', monospace; color:var(--gold-soft); font-size:13px;}
+  .field-hint{
+    font-size:11.5px;
+    color:#6a7288;
+    font-style:italic;
+    margin-top:8px;
+    line-height:1.5;
+  }
+  .detail-toggle{
+    background:none; border:none; color:var(--gold-soft);
+    font-size:12px; cursor:pointer; padding:0; margin-top:10px; display:block;
+    text-decoration:underline; text-underline-offset:3px; font-family:'Inter', sans-serif;
+  }
+  .detail-toggle:hover{ color:var(--gold); }
+  .detail-panel{
+    margin-top:14px; padding:16px 18px;
+    background:rgba(255,255,255,0.02); border:1px solid var(--line); border-radius:4px;
+  }
+  .detail-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; }
+  .detail-row span{ font-size:12.5px; color:var(--slate); flex:1; }
+  .detail-row input[type=number]{
+    width:110px; background:rgba(255,255,255,0.03); border:1px solid var(--line);
+    color:var(--ivory); font-family:'IBM Plex Mono', monospace; font-size:13px;
+    padding:8px 10px; border-radius:var(--radius); outline:none; text-align:right;
+  }
+  .detail-row input:focus{ border-color:var(--gold); }
+  .detail-back{
+    background:none; border:none; color:var(--slate); font-size:11.5px; cursor:pointer;
+    padding:0; margin-top:4px; text-decoration:underline; text-underline-offset:3px; font-family:'Inter', sans-serif;
+  }
+  .detail-back:hover{ color:var(--gold-soft); }
+  .detail-subtotal{
+    font-size:12.5px; color:var(--gold-soft); font-family:'IBM Plex Mono', monospace;
+    padding-top:10px; margin-top:2px; border-top:1px dashed var(--line);
+    display:flex; justify-content:space-between;
+  }
   input[type=range]{
     -webkit-appearance:none; width:100%; height:2px; background:var(--line);
     border-radius:2px; outline:none;
@@ -327,12 +362,38 @@
 
         <div class="field">
           <label>Dépenses fixes incompressibles <span class="val" id="valFixes">1 200 €</span></label>
-          <input type="range" id="fixes" min="0" max="5000" step="50" value="1200">
+          <div id="fixesSliderRow">
+            <input type="range" id="fixes" min="0" max="5000" step="50" value="1200">
+            <div class="field-hint">Ex : loyer ou crédit immobilier, charges de copropriété, assurances obligatoires, électricité, eau, internet.</div>
+            <button type="button" class="detail-toggle" id="toggleFixesDetail">Détailler mes dépenses →</button>
+          </div>
+          <div class="detail-panel hidden" id="fixesDetailPanel">
+            <div class="detail-row"><span>Loyer / crédit immobilier</span><input type="number" min="0" step="10" value="0" id="fx-loyer"></div>
+            <div class="detail-row"><span>Charges de copropriété</span><input type="number" min="0" step="10" value="0" id="fx-charges"></div>
+            <div class="detail-row"><span>Assurances</span><input type="number" min="0" step="10" value="0" id="fx-assurances"></div>
+            <div class="detail-row"><span>Énergie / eau / internet</span><input type="number" min="0" step="10" value="0" id="fx-energie"></div>
+            <div class="detail-row"><span>Autres charges fixes</span><input type="number" min="0" step="10" value="0" id="fx-autres"></div>
+            <div class="detail-subtotal"><span>Sous-total</span><span id="fx-subtotal">0 €</span></div>
+            <button type="button" class="detail-back" id="backFixesSlider">← Revenir au curseur simple</button>
+          </div>
         </div>
 
         <div class="field">
           <label>Dépenses compressibles <span class="val" id="valCompressibles">500 €</span></label>
-          <input type="range" id="compressibles" min="0" max="3000" step="50" value="500">
+          <div id="compressiblesSliderRow">
+            <input type="range" id="compressibles" min="0" max="3000" step="50" value="500">
+            <div class="field-hint">Ex : restaurants, loisirs, abonnements non essentiels (streaming, salle de sport), shopping, sorties.</div>
+            <button type="button" class="detail-toggle" id="toggleCompressiblesDetail">Détailler mes dépenses →</button>
+          </div>
+          <div class="detail-panel hidden" id="compressiblesDetailPanel">
+            <div class="detail-row"><span>Alimentation / restaurants</span><input type="number" min="0" step="10" value="0" id="cp-alimentation"></div>
+            <div class="detail-row"><span>Loisirs / sorties</span><input type="number" min="0" step="10" value="0" id="cp-loisirs"></div>
+            <div class="detail-row"><span>Abonnements</span><input type="number" min="0" step="10" value="0" id="cp-abonnements"></div>
+            <div class="detail-row"><span>Shopping / vêtements</span><input type="number" min="0" step="10" value="0" id="cp-shopping"></div>
+            <div class="detail-row"><span>Autres dépenses courantes</span><input type="number" min="0" step="10" value="0" id="cp-autres"></div>
+            <div class="detail-subtotal"><span>Sous-total</span><span id="cp-subtotal">0 €</span></div>
+            <button type="button" class="detail-back" id="backCompressiblesSlider">← Revenir au curseur simple</button>
+          </div>
         </div>
 
         <div class="section-divider">Épargne déjà constituée</div>
@@ -456,6 +517,6 @@
   document.body.appendChild(root);
 
   var s = document.createElement('script');
-  s.textContent = '\n(function(){\n  const fmt = new Intl.NumberFormat(\'fr-FR\', {maximumFractionDigits:0});\n  const eur = (n) => fmt.format(Math.round(n)) + \' €\';\n  const parseEuroText = (str) => {\n    if (!str) return 0;\n    const cleaned = str.replace(/[^\\d-]/g, \'\');\n    return cleaned ? parseInt(cleaned, 10) : 0;\n  };\n\n  const els = {\n    revenu: document.getElementById(\'revenu\'),\n    complements: document.getElementById(\'complements\'),\n    fixes: document.getElementById(\'fixes\'),\n    compressibles: document.getElementById(\'compressibles\'),\n    valRevenu: document.getElementById(\'valRevenu\'),\n    valComplements: document.getElementById(\'valComplements\'),\n    valFixes: document.getElementById(\'valFixes\'),\n    valCompressibles: document.getElementById(\'valCompressibles\'),\n    figResteAVivre: document.getElementById(\'figResteAVivre\'),\n    figEpargnePotentielle: document.getElementById(\'figEpargnePotentielle\'),\n    figProjection12: document.getElementById(\'figProjection12\'),\n  };\n\n  function compute(){\n    const revenu = parseFloat(els.revenu.value);\n    const complements = parseFloat(els.complements.value);\n    const fixes = parseFloat(els.fixes.value);\n    const compressibles = parseFloat(els.compressibles.value);\n\n    els.valRevenu.textContent = eur(revenu);\n    els.valComplements.textContent = eur(complements);\n    els.valFixes.textContent = eur(fixes);\n    els.valCompressibles.textContent = eur(compressibles);\n\n    const revenuTotal = revenu + complements;\n    const resteAVivre = revenuTotal - fixes - compressibles;\n    const epargnePotentielle = compressibles * 0.20;\n    const projection12 = epargnePotentielle * 12;\n\n    els.figResteAVivre.textContent = eur(resteAVivre);\n    els.figEpargnePotentielle.textContent = eur(epargnePotentielle);\n    els.figProjection12.textContent = eur(projection12);\n  }\n\n  [\'input\'].forEach(evt=>{\n    [els.revenu, els.complements, els.fixes, els.compressibles].forEach(el=>{\n      el.addEventListener(evt, compute);\n    });\n  });\n\n  compute();\n\n  // ---- Lead form submission ----\n  const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbzHNGYNG-JOVOFx__1DvHVJdst7EVdSfLV0yqTs3C4IpOYR_AFdxS2vyWO7PGDeCQz-/exec";\n\n  const form = document.getElementById(\'leadForm\');\n  const submitBtn = document.getElementById(\'submitBtn\');\n  const successBox = document.getElementById(\'successBox\');\n\n  form.addEventListener(\'submit\', async function(e){\n    e.preventDefault();\n    submitBtn.disabled = true;\n    submitBtn.textContent = \'Envoi...\';\n\n    const payload = {\n      formType: \'budget\',\n      prenom: document.getElementById(\'prenom\').value,\n      nom: document.getElementById(\'nom\').value,\n      email: document.getElementById(\'email\').value,\n      telephone: document.getElementById(\'telephone\').value,\n      consentement: document.getElementById(\'consent\').checked,\n      revenuNet: els.revenu.value,\n      complements: els.complements.value,\n      depensesFixes: els.fixes.value,\n      depensesCompressibles: els.compressibles.value,\n      resteAVivre: parseEuroText(els.figResteAVivre.textContent),\n      epargnePotentielle: parseEuroText(els.figEpargnePotentielle.textContent),\n      projection12Mois: parseEuroText(els.figProjection12.textContent),\n      epargneLivret: document.getElementById(\'ep-livret\').value,\n      epargneAV: document.getElementById(\'ep-av\').value,\n      epargneBourse: document.getElementById(\'ep-bourse\').value,\n      epargneImmo: document.getElementById(\'ep-immo\').value,\n      epargneAutre: document.getElementById(\'ep-autre\').value,\n      dateSoumission: new Date().toISOString()\n    };\n\n    try{\n      await fetch(ENDPOINT_URL, {\n        method: \'POST\',\n        mode: \'no-cors\',\n        headers: {\'Content-Type\':\'text/plain\'},\n        body: JSON.stringify(payload)\n      });\n      form.classList.add(\'hidden\');\n      successBox.classList.remove(\'hidden\');\n    } catch(err){\n      console.error(err);\n      submitBtn.disabled = false;\n      submitBtn.textContent = \'Recevoir mon bilan budgétaire\';\n      alert("Une erreur est survenue, merci de réessayer.");\n    }\n  });\n\n})();\n';
+  s.textContent = '\n(function(){\n  const fmt = new Intl.NumberFormat(\'fr-FR\', {maximumFractionDigits:0});\n  const eur = (n) => fmt.format(Math.round(n)) + \' €\';\n  const parseEuroText = (str) => {\n    if (!str) return 0;\n    const cleaned = str.replace(/[^\\d-]/g, \'\');\n    return cleaned ? parseInt(cleaned, 10) : 0;\n  };\n\n  const els = {\n    revenu: document.getElementById(\'revenu\'),\n    complements: document.getElementById(\'complements\'),\n    fixes: document.getElementById(\'fixes\'),\n    compressibles: document.getElementById(\'compressibles\'),\n    valRevenu: document.getElementById(\'valRevenu\'),\n    valComplements: document.getElementById(\'valComplements\'),\n    valFixes: document.getElementById(\'valFixes\'),\n    valCompressibles: document.getElementById(\'valCompressibles\'),\n    figResteAVivre: document.getElementById(\'figResteAVivre\'),\n    figEpargnePotentielle: document.getElementById(\'figEpargnePotentielle\'),\n    figProjection12: document.getElementById(\'figProjection12\'),\n  };\n\n  let fixesDetailMode = false;\n  let compressiblesDetailMode = false;\n  const fixesDetailIds = [\'fx-loyer\',\'fx-charges\',\'fx-assurances\',\'fx-energie\',\'fx-autres\'];\n  const compressiblesDetailIds = [\'cp-alimentation\',\'cp-loisirs\',\'cp-abonnements\',\'cp-shopping\',\'cp-autres\'];\n\n  function sumDetail(ids){\n    return ids.reduce((sum, id) => sum + (parseFloat(document.getElementById(id).value) || 0), 0);\n  }\n\n  document.getElementById(\'toggleFixesDetail\').addEventListener(\'click\', function(){\n    fixesDetailMode = true;\n    document.getElementById(\'fixesSliderRow\').classList.add(\'hidden\');\n    document.getElementById(\'fixesDetailPanel\').classList.remove(\'hidden\');\n    compute();\n  });\n  document.getElementById(\'backFixesSlider\').addEventListener(\'click\', function(){\n    fixesDetailMode = false;\n    document.getElementById(\'fixesSliderRow\').classList.remove(\'hidden\');\n    document.getElementById(\'fixesDetailPanel\').classList.add(\'hidden\');\n    compute();\n  });\n  fixesDetailIds.forEach(id=>{\n    document.getElementById(id).addEventListener(\'input\', compute);\n  });\n\n  document.getElementById(\'toggleCompressiblesDetail\').addEventListener(\'click\', function(){\n    compressiblesDetailMode = true;\n    document.getElementById(\'compressiblesSliderRow\').classList.add(\'hidden\');\n    document.getElementById(\'compressiblesDetailPanel\').classList.remove(\'hidden\');\n    compute();\n  });\n  document.getElementById(\'backCompressiblesSlider\').addEventListener(\'click\', function(){\n    compressiblesDetailMode = false;\n    document.getElementById(\'compressiblesSliderRow\').classList.remove(\'hidden\');\n    document.getElementById(\'compressiblesDetailPanel\').classList.add(\'hidden\');\n    compute();\n  });\n  compressiblesDetailIds.forEach(id=>{\n    document.getElementById(id).addEventListener(\'input\', compute);\n  });\n\n  function compute(){\n    const revenu = parseFloat(els.revenu.value);\n    const complements = parseFloat(els.complements.value);\n    const fixes = fixesDetailMode ? sumDetail(fixesDetailIds) : parseFloat(els.fixes.value);\n    const compressibles = compressiblesDetailMode ? sumDetail(compressiblesDetailIds) : parseFloat(els.compressibles.value);\n\n    els.valRevenu.textContent = eur(revenu);\n    els.valComplements.textContent = eur(complements);\n    els.valFixes.textContent = eur(fixes);\n    els.valCompressibles.textContent = eur(compressibles);\n\n    if (fixesDetailMode) document.getElementById(\'fx-subtotal\').textContent = eur(fixes);\n    if (compressiblesDetailMode) document.getElementById(\'cp-subtotal\').textContent = eur(compressibles);\n\n    const revenuTotal = revenu + complements;\n    const resteAVivre = revenuTotal - fixes - compressibles;\n    const epargnePotentielle = compressibles * 0.20;\n    const projection12 = epargnePotentielle * 12;\n\n    els.figResteAVivre.textContent = eur(resteAVivre);\n    els.figEpargnePotentielle.textContent = eur(epargnePotentielle);\n    els.figProjection12.textContent = eur(projection12);\n  }\n\n  [\'input\'].forEach(evt=>{\n    [els.revenu, els.complements, els.fixes, els.compressibles].forEach(el=>{\n      el.addEventListener(evt, compute);\n    });\n  });\n\n  compute();\n\n  // ---- Lead form submission ----\n  const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbzHNGYNG-JOVOFx__1DvHVJdst7EVdSfLV0yqTs3C4IpOYR_AFdxS2vyWO7PGDeCQz-/exec";\n\n  const form = document.getElementById(\'leadForm\');\n  const submitBtn = document.getElementById(\'submitBtn\');\n  const successBox = document.getElementById(\'successBox\');\n\n  form.addEventListener(\'submit\', async function(e){\n    e.preventDefault();\n    submitBtn.disabled = true;\n    submitBtn.textContent = \'Envoi...\';\n\n    const payload = {\n      formType: \'budget\',\n      prenom: document.getElementById(\'prenom\').value,\n      nom: document.getElementById(\'nom\').value,\n      email: document.getElementById(\'email\').value,\n      telephone: document.getElementById(\'telephone\').value,\n      consentement: document.getElementById(\'consent\').checked,\n      revenuNet: els.revenu.value,\n      complements: els.complements.value,\n      depensesFixes: fixesDetailMode ? sumDetail(fixesDetailIds) : els.fixes.value,\n      depensesCompressibles: compressiblesDetailMode ? sumDetail(compressiblesDetailIds) : els.compressibles.value,\n      detailFixesUtilise: fixesDetailMode,\n      detailCompressiblesUtilise: compressiblesDetailMode,\n      resteAVivre: parseEuroText(els.figResteAVivre.textContent),\n      epargnePotentielle: parseEuroText(els.figEpargnePotentielle.textContent),\n      projection12Mois: parseEuroText(els.figProjection12.textContent),\n      epargneLivret: document.getElementById(\'ep-livret\').value,\n      epargneAV: document.getElementById(\'ep-av\').value,\n      epargneBourse: document.getElementById(\'ep-bourse\').value,\n      epargneImmo: document.getElementById(\'ep-immo\').value,\n      epargneAutre: document.getElementById(\'ep-autre\').value,\n      dateSoumission: new Date().toISOString()\n    };\n\n    try{\n      await fetch(ENDPOINT_URL, {\n        method: \'POST\',\n        mode: \'no-cors\',\n        headers: {\'Content-Type\':\'text/plain\'},\n        body: JSON.stringify(payload)\n      });\n      form.classList.add(\'hidden\');\n      successBox.classList.remove(\'hidden\');\n    } catch(err){\n      console.error(err);\n      submitBtn.disabled = false;\n      submitBtn.textContent = \'Recevoir mon bilan budgétaire\';\n      alert("Une erreur est survenue, merci de réessayer.");\n    }\n  });\n\n})();\n';
   document.body.appendChild(s);
 })();
